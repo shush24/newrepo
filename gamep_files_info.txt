@@ -1,0 +1,13 @@
+1-setting of game list---template/pink/subfeatures
+
+2-calling of game list---templates/pink/main-download
+
+3-code for game list---include/game-class.php
+
+4-rss name code---include/site_genre.class.php
+
+5-sidebar list code---module/browse/menu_browse.php
+
+6-sidebar-login code---modules/login
+
+7-sidebar-rss code---module/rss/menu_rss.php
