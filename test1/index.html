@@ -1,0 +1,197 @@
+<!DOCTYPE html> 
+<html manifest="offline.manifest">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<title>HTML5 DEMO</title>
+<link href="css/jquery.mobile-1.1.0.min.css" rel="stylesheet" type="text/css"/>
+<link href="css/this-custom.css" rel="stylesheet" type="text/css"/>
+<script src="js/jquery.js" type="text/javascript"></script>
+<script src="js/jquery.mobile-1.1.0.min.js" type="text/javascript"></script>
+<script type="text/javascript" src="js/offline_db.js"></script>
+
+<script type="text/javascript">
+	function trim(stringToTrim) 
+	{
+	return stringToTrim.replace(/^\s+|\s+$/g,"");
+	}
+	function frmrefresh()
+	{
+		document.getElementById("err1").style.display="none";
+		document.getElementById("err2").style.display="none";
+		document.getElementById("err10").style.display="none";
+	}
+	function validate(frm)
+	{
+		frmrefresh();
+		var err=0;
+		if(trim(frm.password.value)==""){
+		document.getElementById("err10").style.display="block";
+		frm.password.focus();
+		err=1;
+		}else if(frm.password.value.length<8)
+		{
+		document.getElementById('err10').style.display='block';
+		document.getElementById('err10').innerHTML='Password length can not be less than 8 characters.';
+		frm.password.focus();
+		}
+		if(trim(frm.name.value)==""){
+		document.getElementById("err2").style.display="block";
+		frm.name.focus();
+		err=1;
+		}
+		if(trim(frm.email.value)=="")
+		{
+			document.getElementById("err1").style.display="block";
+			frm.email.focus();
+			err=1;
+		}else
+		{
+			var emailRegEx = /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,4}$/i;
+			if (frm.email.value.search(emailRegEx) == -1)
+			{
+				document.getElementById("err1").style.display="block";
+				document.getElementById("err1").innerHTML="Invalid Email Id";
+				frm.email.focus();
+				err=1;
+			} 
+		}
+		if(err==1)
+		{
+			return false;
+		}else
+		{
+			var today = new Date();
+			var dt=today.getFullYear()+"-"+(today.getMonth()+1)+"-"+today.getDate()+" "+today.getHours()+":"+today.getMinutes()+":"+today.getSeconds();
+			var name=document.getElementById("name").value;
+			var address=document.getElementById("address").value;
+			var phone=document.getElementById("phone").value;
+			var email=document.getElementById("email").value;
+			var password=document.getElementById("password").value;
+			var online=navigator.onLine;
+			var response1;
+			if(window.XMLHttpRequest)
+				{
+					xmlrequest1=new XMLHttpRequest();
+				}else
+				{
+					xmlrequest1=new ActiveXObject("Microsoft.XMLHTTP");
+				}
+				xmlrequest1.onreadystatechange=function()
+				{
+				//alert(response1);
+					if(xmlrequest1.status==200 && xmlrequest1.readyState==4)
+					{
+						response1=xmlrequest1.responseText;
+						//alert(response1);
+					}
+				}
+				xmlrequest1.open("GET","status.php",true);
+				xmlrequest1.send();
+				
+			
+			
+			
+			
+			if(online)
+			{
+			alert(response1);
+				if(window.XMLHttpRequest)
+				{
+					xmlrequest=new XMLHttpRequest();
+				}else
+				{
+					xmlrequest=new ActiveXObject("Microsoft.XMLHTTP");
+				}
+				xmlrequest.onreadystatechange=function()
+				{
+					if(xmlrequest.status==200 && xmlrequest.readyState==4)
+					{
+						var response=JSON.parse(xmlrequest.responseText);
+						if(response.status=='success')
+						{
+							window.location.href="./index.html";
+						}else if(response.status=='failed' && response.msg!='')
+						{
+							alert(response.msg);
+						}
+					}
+				}
+				xmlrequest.open("POST","register.php",true);
+				var params = "name="+name+"&address="+address+"&phone="+phone+"&email="+email+"&password="+password;
+				xmlrequest.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+				xmlrequest.setRequestHeader("Content-length", params.length);
+				xmlrequest.send(params);
+				return false;
+			}else
+			{
+				onCreate(name,address,phone,email,password,dt);
+				return false;
+			}
+		}
+	}
+	function sync()
+	{
+		var ol=navigator.onLine;
+		if(ol)
+		{
+			syncdb();
+		}
+	}
+</script>
+</head> 
+<body onLoad="onInit();sync()"> 
+<div data-role="page" id="page" data-theme="a">
+	<div data-role="header" data-theme="a" ></div>
+	<div data-role="content" data-theme="a">
+    		<div data-role="header" class="ui-corner-top">
+				<h1>Register</h1>
+			</div>
+			<div class="ui-body ui-body-a ui-corner-bottom">
+            	<form method="POST" action="" name="frm" data-ajax="false" onSubmit="return validate(this);">
+                <input name="r" value="" type="hidden">
+                	<fieldset>
+                    <div class="ui-grid-a makeAdjust">
+                        <div class="ui-block-a left"><label for="email">E-mail :</label></div>
+                        <div class="ui-block-b right">
+						<input type="text" name="email" id="email" value="" onBlur="if(this.value==''){document.getElementById('err1').style.display='block';this.focus();}else{document.getElementById('err1').style.display='none';}"  /></div>
+                    </div>
+                    <p id="err1" class="errorAlert" style=" display:none">This field is required.</p>
+                    <div class="ui-grid-a makeAdjust">
+                        <div class="ui-block-a left"><label for="name">Name :</label></div>
+                        <div class="ui-block-b right"><input type="text" name="name" id="name" value="" onBlur="if(this.value==''){document.getElementById('err2').style.display='block';this.focus();}else{document.getElementById('err2').style.display='none';}" /></div>
+                    </div>
+                    <p id="err2" class="errorAlert" style="display:none">This field is required.</p>
+                    <div class="ui-grid-a makeAdjust">
+                        <div class="ui-block-a left"><label for="name">Phone :</label></div>
+                        <div class="ui-block-b right"><input type="text" name="phone" id="phone" value=""/></div>
+                    </div>
+                    <div class="ui-grid-a makeAdjust">
+                        <div class="ui-block-a left"><label for="street">Address :</label></div>
+                        <div class="ui-block-b right"><input type="text" name="address" id="address" value=""  /></div>
+                    </div>
+                    <p id="err3" class="errorAlert"></p>
+                    <div class="ui-grid-a makeAdjust">
+                        <div class="ui-block-a left"><label for="password">Password :</label></div>
+                        <div class="ui-block-b right"><input type="password" name="password" id="password" value="" onBlur="if(this.value==''){document.getElementById('err10').innerHTML='This field is required.';document.getElementById('err10').style.display='block';this.focus();}else if(this.value.length<8){document.getElementById('err10').style.display='block';document.getElementById('err10').innerHTML='Password length can not be less than 8 characters.';this.focus();}else{document.getElementById('err10').style.display='none';document.getElementById('err10').innerHTML='This field is required.';}" /></div>
+                    </div>
+                    <p id="err10" class="errorAlert"></p>
+                    
+                    <div class="makeAdjust">
+                    	<input type="submit" value="Submit" data-ajax="false" />
+                    </div>
+                    </fieldset>
+                </form>
+				<div>
+					<h3>Overview.</h3>
+      				<ul id="itemData" ></ul>
+	  				<h3>Details</h3>
+	  				<h4>Status</h4>
+      				<div id="status"></div></div>
+				</div>
+			</div>
+    </div>
+	<div data-role="footer"></div>
+</div>
+</body>
+</html>
